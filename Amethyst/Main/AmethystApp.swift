@@ -96,6 +96,10 @@ struct AmethystApp: App {
                         }
                     }
                     .modelContainer(container)
+                    .dismissalConfirmationDialog("Are you sure you want to close?", shouldPresent: true) {
+                        Button("Cancel", role: .cancel) {}
+                        Button("Close") {}
+                    }
             }
         }
         .windowToolbarStyle(.unifiedCompact(showsTitle: false))
@@ -126,14 +130,45 @@ struct AmethystApp: App {
                 appViewModel: appViewModel,
                 openWindow: openWindow
             )
+            CommandGroup(replacing: .saveItem) {
+                Button("Close") {
+                    interceptClose()
+                }
+                .keyboardShortcut("w", modifiers: .command)
+            }
         }
         
         Settings {
             SettingsView()
                 .frame(width: 900, height: 500)
                 .environment(appViewModel)
-                //.environment(accProvider)
         }
     }
+    
+    func interceptClose() {
+        guard
+            let contentViewModel = contentViewModelForActiveWindow(appViewModel: appViewModel),
+            !contentViewModel.tabs.isEmpty
+        else {
+            NSApp.keyWindow?.close()
+            return
+        }
+        let alert = NSAlert()
+        alert.messageText = "Close this window?"
+        let cancel = alert.addButton(withTitle: "Cancel")
+        cancel.keyEquivalent = "\u{1b}"
+        let button = alert.addButton(withTitle: "Close")
+        button.isBordered = true
+        button.bezelColor = .controlAccentColor
+        button.keyEquivalent = "\r"
+        
+        let result = alert.runModal()
+        if result == .alertSecondButtonReturn {
+            NSApp.keyWindow?.close()
+        }
+    }
+    
+    func contentViewModelForActiveWindow(appViewModel: AppViewModel) -> ContentViewModel? {
+        return appViewModel.displayedWindows[appViewModel.currentlyActiveWindowId]
+    }
 }
-

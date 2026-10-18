@@ -25,6 +25,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let alert = NSAlert()
+        alert.messageText = "Are you sure you want to quit?"
+        let cancel = alert.addButton(withTitle: "Cancel")
+        cancel.keyEquivalent = "\u{1b}"
+        let button = alert.addButton(withTitle: "Quit")
+        button.isBordered = true
+        button.bezelColor = .controlAccentColor
+        button.keyEquivalent = "\r"
+        let result = alert.runModal()
+        if result == .alertFirstButtonReturn {
+            return .terminateCancel
+        }
+        
         guard let appViewModel else { return .terminateNow }
         CDTabController.clear()
         
@@ -32,11 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             insert(valuesOf: contentViewModel, id: contentViewModel.id)
         }
         
-        Self.logger.info("about to save tab changes")
-        Self.logger.info("Container has changes: \(CDTabController.shared.container.viewContext.hasChanges)")
         CDTabController.save()
-        Self.logger.info("tabs saved")
-        Self.logger.info("Container has changes after saving: \(CDTabController.shared.container.viewContext.hasChanges)")
         return .terminateNow
     }
     

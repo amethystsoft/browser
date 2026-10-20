@@ -96,10 +96,6 @@ struct AmethystApp: App {
                         }
                     }
                     .modelContainer(container)
-                    .dismissalConfirmationDialog("Are you sure you want to close?", shouldPresent: true) {
-                        Button("Cancel", role: .cancel) {}
-                        Button("Close") {}
-                    }
             }
         }
         .windowToolbarStyle(.unifiedCompact(showsTitle: false))
